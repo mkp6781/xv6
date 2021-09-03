@@ -62,6 +62,7 @@ sys_sleep(void)
     return -1;
   acquire(&tickslock);
   ticks0 = ticks;
+  printf("<from kernel> Sleeping for %d seconds\n", n);
   while(ticks - ticks0 < n){
     if(myproc()->killed){
       release(&tickslock);
@@ -71,6 +72,16 @@ sys_sleep(void)
   }
   release(&tickslock);
   return 0;
+}
+
+uint64
+sys_echo_simple(void){
+ char buffer[MAXPATH];
+ 
+ if(argstr(0, buffer, MAXPATH) < 0)
+  return -1;
+ printf("%s\n", buffer);
+ return 0;
 }
 
 uint64

@@ -131,6 +131,11 @@ UPROGS=\
 	$U/_usertests\
 	$U/_grind\
 	$U/_wc\
+	$U/_myuser\
+	$U/_sleep\
+	$U/_test_problem_1\
+	$U/_test_problem_2\
+	$U/_firstprog\
 	$U/_zombie\
 
 fs.img: mkfs/mkfs README $(UPROGS)
