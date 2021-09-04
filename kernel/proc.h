@@ -96,6 +96,9 @@ struct proc {
   // proc_tree_lock must be held when using this:
   struct proc *parent;         // Parent process
 
+  // to keep track of system calls to be traced.
+  uint64 tracer[32];
+
   // these are private to the process, so p->lock need not be held.
   uint64 kstack;               // Virtual address of kernel stack
   uint64 sz;                   // Size of process memory (bytes)

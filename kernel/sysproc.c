@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "syscall.h"
 
 uint64
 sys_exit(void)
@@ -14,18 +15,24 @@ sys_exit(void)
   if(argint(0, &n) < 0)
     return -1;
   exit(n);
+  if(myproc()->tracer[SYS_exit])
+   printf("exit: %d\n", n);
   return 0;  // not reached
 }
 
 uint64
 sys_getpid(void)
 {
+  if(myproc()->tracer[SYS_getpid])
+   printf("getpid: No Arguments.\n");
   return myproc()->pid;
 }
 
 uint64
 sys_fork(void)
 {
+  if(myproc()->tracer[SYS_fork])
+   printf("fork: No Arguments.\n");
   return fork();
 }
 
@@ -35,6 +42,8 @@ sys_wait(void)
   uint64 p;
   if(argaddr(0, &p) < 0)
     return -1;
+  if(myproc()->tracer[SYS_wait])
+   printf("wait: %p\n", p);
   return wait(p);
 }
 
@@ -49,6 +58,9 @@ sys_sbrk(void)
   addr = myproc()->sz;
   if(growproc(n) < 0)
     return -1;
+
+  if(myproc()->tracer[SYS_sbrk])
+   printf("sbrk: %d\n", n);
   return addr;
 }
 
@@ -71,6 +83,8 @@ sys_sleep(void)
     sleep(&ticks, &tickslock);
   }
   release(&tickslock);
+  if(myproc()->tracer[SYS_sleep])
+   printf("sleep: %d\n", n);
   return 0;
 }
 
@@ -80,7 +94,54 @@ sys_echo_simple(void){
  
  if(argstr(0, buffer, MAXPATH) < 0)
   return -1;
+ if(myproc()->tracer[SYS_echo_simple])
+  printf("echo_simple: %p\n", buffer);
  printf("%s\n", buffer);
+ return 0;
+}
+
+uint64
+sys_echo_kernel(void){
+ uint64 p;
+ int n;
+ int i;
+
+ if(argint(0, &n) < 0)
+  return -1;
+ if(argaddr(1, &p) < 0)
+  return -1;
+ for(i=1;i<n;++i){
+  uint64 buf;
+  char buffer[MAXPATH];
+
+  if(fetchaddr(p+(i*sizeof(p)), &buf) < 0)
+   return -1;
+  if(fetchstr(buf, buffer, MAXPATH) < 0)
+   return -1;
+  if(i==n-1)
+   printf("%s\n", buffer);
+  else
+   printf("%s ", buffer);
+ }
+ if(myproc()->tracer[SYS_echo_kernel])
+  printf("echo_kernel: %d, %p\n", n, p);
+ return 0;
+}
+
+uint64
+sys_trace(void){
+ int i;
+ int n;
+
+ if(argint(0, &n) < 0)
+  return -1;
+ for(i=0;i<32;++i){
+  if((1<<i) & n){
+   myproc()->tracer[i] = 1;  
+  }
+ }
+ if(myproc()->tracer[SYS_trace])
+  printf("trace: %d\n", n);
  return 0;
 }
 
@@ -91,6 +152,8 @@ sys_kill(void)
 
   if(argint(0, &pid) < 0)
     return -1;
+  if(myproc()->tracer[SYS_kill])
+   printf("kill: %d\n", pid);
   return kill(pid);
 }
 
@@ -104,5 +167,7 @@ sys_uptime(void)
   acquire(&tickslock);
   xticks = ticks;
   release(&tickslock);
+  if(myproc()->tracer[SYS_uptime])
+   printf("uptime: No Arguments.\n");
   return xticks;
 }

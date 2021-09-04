@@ -15,6 +15,7 @@
 #include "sleeplock.h"
 #include "file.h"
 #include "fcntl.h"
+#include "syscall.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -62,6 +63,8 @@ sys_dup(void)
     return -1;
   if((fd=fdalloc(f)) < 0)
     return -1;
+  if(myproc()->tracer[SYS_dup])
+   printf("dup: %d\n", fd);
   filedup(f);
   return fd;
 }
@@ -75,6 +78,8 @@ sys_read(void)
 
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argaddr(1, &p) < 0)
     return -1;
+  if(myproc()->tracer[SYS_read])
+   printf("read: %p, %p, %d\n", f, p, n);
   return fileread(f, p, n);
 }
 
@@ -88,6 +93,8 @@ sys_write(void)
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argaddr(1, &p) < 0)
     return -1;
 
+  if(myproc()->tracer[SYS_write])
+   printf("write: %p, %p, %d\n", f, p, n);
   return filewrite(f, p, n);
 }
 
@@ -99,6 +106,8 @@ sys_close(void)
 
   if(argfd(0, &fd, &f) < 0)
     return -1;
+  if(myproc()->tracer[SYS_close])
+   printf("close: %d\n", fd);
   myproc()->ofile[fd] = 0;
   fileclose(f);
   return 0;
@@ -112,6 +121,8 @@ sys_fstat(void)
 
   if(argfd(0, 0, &f) < 0 || argaddr(1, &st) < 0)
     return -1;
+  if(myproc()->tracer[SYS_fstat])
+   printf("fstat: %p, %p\n", f, st);
   return filestat(f, st);
 }
 
@@ -153,6 +164,9 @@ sys_link(void)
   iput(ip);
 
   end_op();
+
+  if(myproc()->tracer[SYS_link])
+   printf("link: %s, %s\n", old, new);
 
   return 0;
 
@@ -230,6 +244,8 @@ sys_unlink(void)
 
   end_op();
 
+  if(myproc()->tracer[SYS_unlink])
+   printf("unlink: %s\n", path);
   return 0;
 
 bad:
@@ -348,6 +364,8 @@ sys_open(void)
   iunlock(ip);
   end_op();
 
+  if(myproc()->tracer[SYS_open])
+   printf("open: %s, %d\n", path, omode);
   return fd;
 }
 
@@ -364,6 +382,9 @@ sys_mkdir(void)
   }
   iunlockput(ip);
   end_op();
+
+  if(myproc()->tracer[SYS_mkdir])
+   printf("open: %s\n", path);
   return 0;
 }
 
@@ -384,6 +405,9 @@ sys_mknod(void)
   }
   iunlockput(ip);
   end_op();
+
+  if(myproc()->tracer[SYS_mknod])
+   printf("mknod: %s %d %d\n", path, major, minor);
   return 0;
 }
 
@@ -409,6 +433,8 @@ sys_chdir(void)
   iput(p->cwd);
   end_op();
   p->cwd = ip;
+  if(myproc()->tracer[SYS_chdir])
+   printf("chdir: %s\n", path);
   return 0;
 }
 
@@ -446,6 +472,9 @@ sys_exec(void)
   for(i = 0; i < NELEM(argv) && argv[i] != 0; i++)
     kfree(argv[i]);
 
+  if(myproc()->tracer[SYS_exec])
+   printf("exec: %s, %p\n", path, uargv);
+  //memset(myproc()->tracer, 0, sizeof(myproc()->tracer));
   return ret;
 
  bad:
@@ -482,5 +511,8 @@ sys_pipe(void)
     fileclose(wf);
     return -1;
   }
+
+  if(myproc()->tracer[SYS_pipe])
+   printf("pipe: %p\n", fdarray);
   return 0;
 }
