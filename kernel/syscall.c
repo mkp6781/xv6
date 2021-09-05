@@ -107,6 +107,7 @@ extern uint64 sys_uptime(void);
 extern uint64 sys_echo_simple(void);
 extern uint64 sys_echo_kernel(void);
 extern uint64 sys_trace(void);
+extern uint64 sys_get_process_info(void);
 
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -133,9 +134,10 @@ static uint64 (*syscalls[])(void) = {
 [SYS_echo_simple] sys_echo_simple,
 [SYS_echo_kernel] sys_echo_kernel,
 [SYS_trace] sys_trace,
+[SYS_get_process_info] sys_get_process_info,
 };
 
-static char syscallnames[25][20] = {
+static char syscallnames[32][20] = {
 [SYS_fork]    "fork",
 [SYS_exit]    "exit",
 [SYS_wait]    "wait",
@@ -160,6 +162,7 @@ static char syscallnames[25][20] = {
 [SYS_echo_simple] "echo_simple",
 [SYS_echo_kernel] "echo_kernel",
 [SYS_trace] "trace",
+[SYS_get_process_info] "get_process_info",
 };
 
 void

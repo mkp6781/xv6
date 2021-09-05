@@ -146,6 +146,16 @@ sys_trace(void){
 }
 
 uint64
+sys_get_process_info(void){
+ uint64 procinfo;
+ if(argaddr(0, &procinfo) < 0){
+  return -1;
+ }
+ printf("<from kernel> Getting process info..");
+ return getprocessinfo(procinfo);
+}
+
+uint64
 sys_kill(void)
 {
   int pid;

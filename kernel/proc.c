@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "processinfo.h"
 
 struct cpu cpus[NCPU];
 
@@ -245,6 +246,18 @@ userinit(void)
   p->state = RUNNABLE;
 
   release(&p->lock);
+}
+
+// Get process information.
+// addr is a user virtual address, pointing to a struct processinfo.
+int
+getprocessinfo(uint64 addr){
+  struct proc *p = myproc();
+  struct processinfo procinfo;
+
+  if(copyout(p->pagetable, addr, (char *)&procinfo, sizeof(procinfo)) < 0)
+    return -1;
+  return 0;
 }
 
 // Grow or shrink user memory by n bytes.

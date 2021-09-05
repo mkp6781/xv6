@@ -135,6 +135,7 @@ UPROGS=\
 	$U/_sleep\
 	$U/_test_problem_1\
 	$U/_test_problem_2\
+	$U/_test_problem_3\
 	$U/_trace\
 	$U/_firstprog\
 	$U/_zombie\
